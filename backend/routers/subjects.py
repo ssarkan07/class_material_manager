@@ -39,7 +39,7 @@ def add_subject(year_key: str, subject: schemas.SubjectCreate, db: Session = Dep
     # Auto-create the 4 default sections for this subject
     default_sections = ["Unit wise PPT", "CIE", "Examination", "Syllabus"]
     for section_title in default_sections:
-        db.add(models.Section(title=section_title, subject_id=new_subject.id))
+        db.add(models.Section(title=section_title))
 
     db.commit()
     db.refresh(new_subject)

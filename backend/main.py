@@ -7,7 +7,7 @@ import models
 from routers import years, subjects, files
 
 # ── Create all database tables on startup ──────────────────────────────────────
-# This reads models.py and creates any tables that don't exist yet in MySQL.
+# This reads models.py and creates any tables that don't exist yet in Supabase PostgreSQL.
 # It is safe to run multiple times — it never drops existing tables.
 models.Base.metadata.create_all(bind=engine)
 

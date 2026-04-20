@@ -12,7 +12,7 @@ class FileBase(BaseModel):
     link: str
 
 class FileCreate(FileBase):
-    pass
+    subject_id: int
 
 class FileUpdate(BaseModel):
     name: Optional[str] = None
@@ -20,6 +20,7 @@ class FileUpdate(BaseModel):
 
 class FileResponse(FileBase):
     id: int
+    subject_id: int
     section_id: int
 
     class Config:
@@ -38,7 +39,6 @@ class SectionCreate(SectionBase):
 
 class SectionResponse(SectionBase):
     id: int
-    subject_id: int
     files: List[FileResponse] = []
 
     class Config:
@@ -64,6 +64,13 @@ class SubjectResponse(SubjectBase):
 
     class Config:
         from_attributes = True
+
+
+class SubjectSectionsResponse(BaseModel):
+    subject_id: int
+    subject_name: str
+    year_key: str
+    sections: List[SectionResponse]
 
 
 # ──────────────────────────────────────────────

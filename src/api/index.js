@@ -76,10 +76,10 @@ export const getSubjectSections = (subjectName) =>
   request(`/subjects/${subjectName}/sections`);
 
 /**
- * POST /api/sections/{sectionId}/files
- * Adds a new file to a specific section.
+ * POST /api/sections/{section_id}/files
+ * Adds a new file to a specific section and subject.
  * @param {number} sectionId - The section's database ID
- * @param {{ name: string, link: string, size?: string }} fileData
+ * @param {{ name: string, link: string, subject_id: number }} fileData
  */
 export const addFile = (sectionId, fileData) =>
   request(`/sections/${sectionId}/files`, {

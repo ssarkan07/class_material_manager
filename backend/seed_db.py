@@ -16,7 +16,17 @@ This script:
 from database import SessionLocal, engine
 import models
 
-# Create tables if they don't exist
+from sqlalchemy import text
+
+# Drop all tables with CASCADE (handles FK dependencies in PostgreSQL)
+# then recreate with the latest schema
+with engine.connect() as conn:
+    conn.execute(text("DROP TABLE IF EXISTS files CASCADE"))
+    conn.execute(text("DROP TABLE IF EXISTS sections CASCADE"))
+    conn.execute(text("DROP TABLE IF EXISTS subjects CASCADE"))
+    conn.execute(text("DROP TABLE IF EXISTS years CASCADE"))
+    conn.commit()
+
 models.Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
@@ -137,11 +147,20 @@ def seed():
     # Prevent duplicate seeding
     existing = db.query(models.Year).first()
     if existing:
-        print("⚠️  Database already has data. Skipping seed to prevent duplicates.")
+        print("[SKIP] Database already has data. Skipping seed to prevent duplicates.")
         print("   If you want to re-seed, delete all rows first or drop the database.")
         return
 
-    print("🌱 Seeding database...")
+    print("[START] Seeding database...")
+
+    # 1. Create master sections once
+    section_map = {}
+    for section_title in DEFAULT_SECTIONS:
+        section = models.Section(title=section_title)
+        db.add(section)
+        db.flush()
+        section_map[section_title] = section.id
+        print(f"  [OK] Created master section: {section_title}")
 
     for year_data in YEARS:
         # Create the year tab
@@ -153,7 +172,7 @@ def seed():
         db.add(year)
         db.flush()  # get year.id before commit
 
-        print(f"  ✅ Created year: {year_data['year_key']}")
+        print(f"  [OK] Created year: {year_data['year_key']}")
 
         for subject_name in year_data["subjects"]:
             # Create the subject
@@ -161,31 +180,37 @@ def seed():
             db.add(subject)
             db.flush()  # get subject.id
 
-            print(f"     📁 Created subject: {subject_name}")
+            print(f"     [+] Created subject: {subject_name}")
 
             # Check if we have detailed file data for this subject
             if subject_name in SUBJECT_FILES:
-                sections_data = SUBJECT_FILES[subject_name]
+                subject_data = SUBJECT_FILES[subject_name]
+                for section_data in subject_data:
+                    # Get the pre-created section ID or create a new one if it's missing
+                    section_id = section_map.get(section_data["title"])
+                    if not section_id:
+                        new_sec = models.Section(title=section_data["title"])
+                        db.add(new_sec)
+                        db.flush()
+                        section_id = new_sec.id
+                        section_map[section_data["title"]] = section_id
+                        print(f"       [!] Added extra section: {section_data['title']}")
+
+                    for file_data in section_data["files"]:
+                        file = models.File(
+                            name=file_data["name"],
+                            size=file_data.get("size"),
+                            link=file_data["link"],
+                            subject_id=subject.id,
+                            section_id=section_id,
+                        )
+                        db.add(file)
             else:
-                # Create empty default sections for subjects without specific data
-                sections_data = [{"title": t, "files": []} for t in DEFAULT_SECTIONS]
-
-            for section_data in sections_data:
-                section = models.Section(title=section_data["title"], subject_id=subject.id)
-                db.add(section)
-                db.flush()  # get section.id
-
-                for file_data in section_data["files"]:
-                    file = models.File(
-                        name=file_data["name"],
-                        size=file_data.get("size"),
-                        link=file_data["link"],
-                        section_id=section.id,
-                    )
-                    db.add(file)
+                # Subjects without data will simply display empty default sections in the UI
+                pass
 
     db.commit()
-    print("\n🎉 Database seeded successfully!")
+    print("\n[DONE] Database seeded successfully!")
     print("   You can now start the server: uvicorn main:app --reload")
 
 
@@ -194,7 +219,7 @@ if __name__ == "__main__":
         seed()
     except Exception as e:
         db.rollback()
-        print(f"\n❌ Error during seeding: {e}")
+        print(f"\n[ERROR] Error during seeding: {e}")
         raise
     finally:
         db.close()

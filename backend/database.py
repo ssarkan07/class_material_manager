@@ -7,16 +7,13 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "arkan07")
-DB_NAME = os.getenv("DB_NAME", "class_material_manager")
+# Read the full Supabase PostgreSQL connection URL from .env
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# PyMySQL connection URL — format: mysql+pymysql://user:password@host:port/dbname
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set in the .env file!")
 
-# Create SQLAlchemy engine
+# Create SQLAlchemy engine using psycopg2 (PostgreSQL driver)
 engine = create_engine(DATABASE_URL, echo=True)
 
 # Each request gets its own database session

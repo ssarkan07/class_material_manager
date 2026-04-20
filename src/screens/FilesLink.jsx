@@ -12,6 +12,8 @@ const FilesLink = () => {
   const { subject } = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sectionsData, setSectionsData] = useState([]);
+  const [subjectId, setSubjectId] = useState(null);
+  const [yearKey, setYearKey] = useState('SY');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,7 +29,9 @@ const FilesLink = () => {
       setLoading(true);
       setError(null);
       const data = await getSubjectSections(subject);
-      setSectionsData(data);
+      setSectionsData(data.sections);
+      setSubjectId(data.subject_id);
+      setYearKey(data.year_key);
     } catch (err) {
       setError(`Failed to load files for "${subject}". Make sure the backend is running.`);
       console.error(err);
@@ -51,7 +55,7 @@ const FilesLink = () => {
       await addFile(targetSection.id, {
         name: fileInfo.name,
         link: fileInfo.link,
-        size: null,
+        subject_id: subjectId,
       });
       await fetchSections();
     } catch (err) {
@@ -95,7 +99,7 @@ const FilesLink = () => {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="dashboard-container">
-      <Sidebar activeTab="SY" onTabChange={() => {}} />
+      <Sidebar activeTab={yearKey} onTabChange={() => {}} />
 
       <main className="main-content">
         <Header title="AIDS Department" />
