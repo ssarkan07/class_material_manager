@@ -6,12 +6,18 @@ import AddSubjectCard from '../components/AddSubjectCard';
 import AddSubjectModal from '../components/AddSubjectModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import UpdateFolderModal from '../components/UpdateFolderModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getYears, addSubject, deleteSubject, updateSubject } from '../api/index';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('SY');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'SY');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sync state with URL when tab changes
+  useEffect(() => {
+    setSearchParams({ tab: activeTab });
+  }, [activeTab, setSearchParams]);
 
   // yearsData holds the full API response: [{ year_key, title, subtitle, subjects: [...] }]
   const [yearsData, setYearsData] = useState([]);
@@ -137,7 +143,7 @@ const Dashboard = () => {
                   key={subject.id}
                   name={subject.name}
                   subjectId={subject.id}
-                  onClick={() => navigate(`/files/${subject.name}`)}
+                  onClick={() => navigate(`/files/${activeTab}/${subject.name}`)}
                   onDelete={openDeleteModal}
                   onUpdate={openUpdateModal}
                 />

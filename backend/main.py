@@ -23,10 +23,7 @@ app = FastAPI(
 # Without this, the browser will block all requests with a 'CORS error'.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",   # Vite dev server
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["*"],           # Allows all origins (Vite dev, Render frontend, etc.)
     allow_credentials=True,
     allow_methods=["*"],           # Allows GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],

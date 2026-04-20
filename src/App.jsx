@@ -10,7 +10,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/files/:subject" element={<FilesLink />} />
+          <Route path="/files/:yearKey/:subject" element={<FilesLink />} />
         </Routes>
       </div>
     </Router>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import FileCard from '../components/FileCard';
@@ -9,11 +9,12 @@ import UpdateFileModal from '../components/UpdateFileModal';
 import { getSubjectSections, addFile, deleteFile, updateFile } from '../api/index';
 
 const FilesLink = () => {
-  const { subject } = useParams();
+  const { yearKey: urlYearKey, subject } = useParams();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sectionsData, setSectionsData] = useState([]);
   const [subjectId, setSubjectId] = useState(null);
-  const [yearKey, setYearKey] = useState('SY');
+  const [yearKey, setYearKey] = useState(urlYearKey || 'SY');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -99,7 +100,7 @@ const FilesLink = () => {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="dashboard-container">
-      <Sidebar activeTab={yearKey} onTabChange={() => {}} />
+      <Sidebar activeTab={yearKey} onTabChange={(id) => navigate(`/?tab=${id}`)} />
 
       <main className="main-content">
         <Header title="AIDS Department" />
