@@ -7,13 +7,20 @@
  * Base URL: http://localhost:8000
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8001/api";
+let BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8001/api";
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
 async function request(url, options = {}) {
-  // Ensure we don't have double slashes when joining BASE_URL and url
+  // 1. Ensure BASE_URL ends with /api (but not /api/)
+  let cleanBase = BASE_URL.trim();
+  if (cleanBase.endsWith('/')) cleanBase = cleanBase.slice(0, -1);
+  if (!cleanBase.endsWith('/api')) cleanBase += '/api';
+
+  // 2. Ensure normalizedUrl doesn't start with /
   const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
-  const fullUrl = `${BASE_URL}/${normalizedUrl}`;
+  
+  // 3. Join them with a single slash
+  const fullUrl = `${cleanBase}/${normalizedUrl}`;
   
   const response = await fetch(fullUrl, {
     headers: { "Content-Type": "application/json" },
